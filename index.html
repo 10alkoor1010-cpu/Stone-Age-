@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>العصر الحجري</title>
+
+  <!-- Native Mobile Web App (PWA) Meta Tags for iOS & Android -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="العصر الحجري" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#090604" />
+  <meta name="application-name" content="العصر الحجري" />
+
+  <!-- App Icon & Apple Touch Startup / Icon Links -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;900&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #090604;
+      font-family: 'Cairo', sans-serif;
+      overscroll-behavior: none;
+    }
+    .glass-menu {
+      background: rgba(16, 12, 9, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(245, 180, 65, 0.34);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.85);
+    }
+    .pose-btn-active {
+      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+      color: #fff !important;
+      border-color: #fde68a !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+    }
+    .gold-shimmer {
+      text-shadow: 0 0 18px rgba(251, 191, 36, 0.7), 0 0 36px rgba(245, 158, 11, 0.4);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden bg-[#090604]">
+
+  <!-- Full-Screen Interactive 2D Scene Canvas -->
+  <canvas id="mainCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+  <!-- Floating Hearts Overlay Canvas (Always on top) -->
+  <canvas id="heartsCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-50"></canvas>
+
+  <!-- START MENU OVERLAY (قائمة البداية قبل البدء مع صورة البداية وأيقونة اللعبة) -->
+  <div
+    id="startScreenOverlay"
+    class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity duration-500"
+  >
+    <div class="absolute inset-0 bg-gradient-to-t from-[#090604] via-[#090604]/50 to-[#090604]/80 pointer-events-none"></div>
+
+    <!-- Start Card -->
+    <div class="glass-menu relative z-10 max-w-md w-full rounded-3xl p-5 sm:p-7 text-center flex flex-col items-center gap-4 border border-amber-400/40">
+      <!-- Top small clickable "نحبك يارغودا" button (No emoji) -->
+      <button
+        id="loveBtnStart"
+        class="text-[11px] sm:text-xs font-bold text-pink-200 hover:text-white bg-pink-950/60 hover:bg-pink-900/70 border border-pink-400/35 rounded-full px-4 py-1 transition active:scale-95 shadow-sm"
+      >
+        نحبك يارغودا
+      </button>
+
+      <!-- Main Title requested by user -->
+      <h1 class="text-lg sm:text-2xl font-black text-amber-100 gold-shimmer leading-relaxed px-2">
+        محاكاة لرغودا لو افترضنا وجودها في العصر الحجري
+      </h1>
+
+      <!-- Start Button -->
+      <button
+        id="startSimBtn"
+        class="w-full py-3.5 px-8 rounded-2xl font-black text-base sm:text-lg bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-stone-950 shadow-lg shadow-amber-500/40 hover:brightness-110 active:scale-95 transition cursor-pointer"
+      >
+        بدء
+      </button>
+    </div>
+  </div>
+
+  <!-- Minimal Top-Left Settings & Poses Button + Compact Popover (No emojis on options) -->
+  <div id="topLeftControls" class="fixed top-3 left-3 z-30 hidden flex-col items-end" dir="rtl">
+    <button
+      id="menuToggleBtn"
+      class="w-10 h-10 rounded-xl glass-menu flex items-center justify-center text-amber-300 hover:text-amber-100 hover:border-amber-400/60 active:scale-95 transition"
+      title="الإعدادات والوضعيات"
+      aria-label="الإعدادات والوضعيات"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="21" x2="4" y2="14"></line>
+        <line x1="4" y1="10" x2="4" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="3"></line>
+        <line x1="20" y1="21" x2="20" y2="16"></line>
+        <line x1="20" y1="12" x2="20" y2="3"></line>
+        <line x1="1" y1="14" x2="7" y2="14"></line>
+        <line x1="9" y1="8" x2="15" y2="8"></line>
+        <line x1="17" y1="16" x2="23" y2="16"></line>
+      </svg>
+    </button>
+
+    <!-- Compact Dropdown Panel (Pure text options without emojis) -->
+    <div
+      id="settingsPanel"
+      class="hidden mt-2 w-60 rounded-2xl glass-menu p-3.5 text-amber-50 space-y-2.5 transition-all"
+    >
+      <!-- Top small clickable "نحبك يارغودا" & Audio toggle without emojis -->
+      <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+        <button
+          id="loveBtnMenu"
+          class="text-[11px] font-bold text-pink-200 hover:text-white bg-pink-950/60 hover:bg-pink-900/70 border border-pink-400/35 rounded-full px-3 py-0.5 transition active:scale-95"
+        >
+          نحبك يارغودا
+        </button>
+        <button
+          id="audioToggleBtn"
+          class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-900/90 border border-amber-500/30 text-amber-200 hover:bg-stone-800 transition"
+        >
+          الصوت: مفعل
+        </button>
+      </div>
+
+      <!-- Poses Grid Only (Zero Emojis) -->
+      <div class="grid grid-cols-2 gap-1.5 text-xs">
+        <button id="modeWaveBtn" class="col-span-2 py-1.5 px-2.5 rounded-lg font-bold border border-amber-500/25 bg-stone-900/80 text-amber-100 transition pose-btn-active">
+          موجة السجود المتتالية
+        </button>
+        <button id="modePose1Btn" class="py-1.5 px-2 rounded-lg font-semibold border border-amber-500/25 bg-stone-900/80 text-amber-100 hover:bg-stone-800 transition">
+          رفع الأيدي
+        </button>
+        <button id="modePose2Btn" class="py-1.5 px-2 rounded-lg font-semibold border border-amber-500/25 bg-stone-900/80 text-amber-100 hover:bg-stone-800 transition">
+          الانحناء
+        </button>
+        <button id="modePose3Btn" class="col-span-2 py-1.5 px-2 rounded-lg font-semibold border border-amber-500/25 bg-stone-900/80 text-amber-100 hover:bg-stone-800 transition">
+          السجود التام
+        </button>
+        <button id="modePianoBtn" class="col-span-2 py-1.5 px-2.5 rounded-lg font-bold border border-amber-400/40 bg-stone-900/90 text-amber-200 hover:bg-stone-800 transition">
+          عزف بيانو
+        </button>
+        <button id="triggerSmiteBtn" class="col-span-2 py-2 px-2.5 rounded-lg font-black bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-white shadow-lg shadow-red-600/40 hover:brightness-110 active:scale-95 transition text-sm">
+          الجلد (تفجيرهم!)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // ==========================================
+      // 0. PWA MANIFEST & SERVICE WORKER SETUP
+      // ==========================================
+      try {
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+      } catch (e) {}
+
+      // ==========================================
+      // 1. SCENE, START MENU, PIANO & HEARTS STATE
+      // ==========================================
+      const state = {
+        started: false,
+        mode: 'wave', // 'wave', 'pose1', 'pose2', 'pose3', 'piano'
+        staggerFrames: 4,
+        speed: 1.0,
+        bloomIntensity: 1.0,
+        time: 0,
+        sceneElapsed: 0,
+        smiteActive: false,
+        smiteTimer: 0,
+        screenShakeX: 0,
+        screenShakeY: 0,
+        panicSpeedBoost: 1.0,
+        pianoVisibility: 0,
+        pianoNoteTimer: 0,
+        pianoNoteIndex: 0,
+        clapSoundTimer: 0,
+        heartsActive: false,
+        heartsTimer: 0,
+        userDragOffset: 0,
+        isDragging: false,
+        dragStartX: 0,
+        audioEnabled: true,
+        audioCtx: null
+      };
+
+      // ==========================================
+      // 2. WEB AUDIO SYNTHESIZER
+      // ==========================================
+      const PIANO_SCORE = [
+        { note: 523.25, bass: 261.63, dur: 0.34 },
+        { note: 659.25, bass: 329.63, dur: 0.34 },
+        { note: 783.99, bass: 392.00, dur: 0.34 },
+        { note: 1046.50, bass: 523.25, dur: 0.52 },
+        { note: 987.77, bass: 392.00, dur: 0.34 },
+        { note: 783.99, bass: 329.63, dur: 0.34 },
+        { note: 880.00, bass: 220.00, dur: 0.38 },
+        { note: 659.25, bass: 329.63, dur: 0.34 },
+        { note: 523.25, bass: 261.63, dur: 0.48 },
+        { note: 587.33, bass: 293.66, dur: 0.34 },
+        { note: 698.46, bass: 349.23, dur: 0.34 },
+        { note: 880.00, bass: 440.00, dur: 0.48 },
+        { note: 783.99, bass: 392.00, dur: 0.34 },
+        { note: 698.46, bass: 349.23, dur: 0.34 },
+        { note: 659.25, bass: 329.63, dur: 0.55 },
+        { note: 587.33, bass: 246.94, dur: 0.34 },
+        { note: 783.99, bass: 392.00, dur: 0.38 },
+        { note: 987.77, bass: 493.88, dur: 0.48 },
+        { note: 1046.50, bass: 261.63, dur: 0.65 }
+      ];
+
+      function ensureAudio() {
+        if (!state.audioEnabled) return null;
+        if (!state.audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return null;
+          state.audioCtx = new AudioContext();
+        }
+        if (state.audioCtx.state === 'suspended') {
+          state.audioCtx.resume();
+        }
+        return state.audioCtx;
+      }
+
+      function toggleAudio() {
+        state.audioEnabled = !state.audioEnabled;
+        const btn = document.getElementById('audioToggleBtn');
+        btn.textContent = state.audioEnabled ? 'الصوت: مفعل' : 'الصوت: مكتوم';
+      }
+
+      function playPianoNote(freq, bassFreq) {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        function triggerString(f, gainLevel, duration) {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const filter = ctx.createBiquadFilter();
+          const env = ctx.createGain();
+
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(f, now);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(f * 2, now);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(f * 4.5, now);
+          filter.frequency.exponentialRampToValueAtTime(f * 1.4, now + duration);
+
+          env.gain.setValueAtTime(0.001, now);
+          env.gain.linearRampToValueAtTime(gainLevel, now + 0.018);
+          env.gain.exponentialRampToValueAtTime(gainLevel * 0.35, now + 0.22);
+          env.gain.exponentialRampToValueAtTime(0.0005, now + duration);
+
+          const osc2Gain = ctx.createGain();
+          osc2Gain.gain.value = 0.25;
+
+          osc1.connect(filter);
+          osc2.connect(osc2Gain);
+          osc2Gain.connect(filter);
+          filter.connect(env);
+          env.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + duration + 0.05);
+          osc2.stop(now + duration + 0.05);
+        }
+
+        triggerString(freq, 0.14, 1.35);
+        if (bassFreq) triggerString(bassFreq, 0.08, 1.55);
+      }
+
+      function playLoveHarpGlissando() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const notes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.5, 1567.98];
+        notes.forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          const startT = now + idx * 0.07;
+          osc.frequency.setValueAtTime(f, startT);
+          gain.gain.setValueAtTime(0.001, startT);
+          gain.gain.linearRampToValueAtTime(0.06, startT + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0005, startT + 1.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startT);
+          osc.stop(startT + 1.25);
+        });
+      }
+
+      function playSoftClapBurst() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const bufLen = Math.floor(ctx.sampleRate * 0.055);
+        const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.018));
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1150 + (Math.random() - 0.5) * 350;
+        filter.Q.value = 1.8;
+
+        const gain = ctx.createGain();
+        gain.gain.value = 0.055;
+
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        src.start(now);
+      }
+
+      function playGroundThud() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(72, now);
+        osc.frequency.exponentialRampToValueAtTime(25, now + 0.12);
+        gain.gain.setValueAtTime(0.038, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      }
+
+      function playMassiveExplosionAndScreams() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        const bufferSize = ctx.sampleRate * 0.9;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.28));
+        }
+        const whiteNoise = ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(950, now);
+        filter.frequency.exponentialRampToValueAtTime(85, now + 0.85);
+
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.42, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.005, now + 0.88);
+
+        whiteNoise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        whiteNoise.start(now);
+
+        const sub = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        sub.type = 'sawtooth';
+        sub.frequency.setValueAtTime(130, now);
+        sub.frequency.exponentialRampToValueAtTime(22, now + 0.65);
+        subGain.gain.setValueAtTime(0.32, now);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.68);
+        sub.connect(subGain);
+        subGain.connect(ctx.destination);
+        sub.start(now);
+        sub.stop(now + 0.7);
+
+        [0.08, 0.18, 0.28].forEach((delay, idx) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(620 + idx * 140, now + delay);
+          osc.frequency.exponentialRampToValueAtTime(180, now + delay + 0.55);
+          g.gain.setValueAtTime(0.06, now + delay);
+          g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.58);
+          osc.connect(g);
+          g.connect(ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.6);
+        });
+      }
+
+      // ==========================================
+      // 3. HEARTS SWARM & FORMATION ("رغودا ملكة الجمال نحبك")
+      // ==========================================
+      const heartParticles = [];
+
+      function generateHeartFormationTargets(w, h) {
+        const off = document.createElement('canvas');
+        const cw = Math.min(900, Math.max(360, Math.floor(w * 0.9)));
+        const ch = Math.min(420, Math.max(220, Math.floor(h * 0.55)));
+        off.width = cw;
+        off.height = ch;
+        const octx = off.getContext('2d');
+
+        octx.fillStyle = '#000000';
+        octx.fillRect(0, 0, cw, ch);
+
+        const fontSize1 = Math.max(28, Math.min(68, Math.floor(cw * 0.085)));
+        const fontSize2 = Math.max(32, Math.min(76, Math.floor(cw * 0.095)));
+
+        octx.fillStyle = '#ffffff';
+        octx.textAlign = 'center';
+        octx.textBaseline = 'middle';
+
+        octx.font = `900 ${fontSize1}px "Cairo", sans-serif`;
+        octx.fillText('رغودا ملكة الجمال', cw * 0.5, ch * 0.36);
+
+        octx.font = `900 ${fontSize2}px "Cairo", sans-serif`;
+        octx.fillText('نحبك', cw * 0.5, ch * 0.72);
+
+        const imgData = octx.getImageData(0, 0, cw, ch).data;
+        const targets = [];
+        const step = Math.max(4, Math.floor(cw / 125));
+
+        const offsetX = (w - cw) * 0.5;
+        const offsetY = (h - ch) * 0.45;
+
+        for (let y = 0; y < ch; y += step) {
+          for (let x = 0; x < cw; x += step) {
+            const idx = (y * cw + x) * 4;
+            if (imgData[idx] > 128) {
+              targets.push({
+                tx: offsetX + x,
+                ty: offsetY + y
+              });
+            }
+          }
+        }
+        return targets;
+      }
+
+      function triggerLoveHeartsShow() {
+        playLoveHarpGlissando();
+        state.heartsActive = true;
+        state.heartsTimer = 0;
+        heartParticles.length = 0;
+
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const targets = generateHeartFormationTargets(w, h);
+
+        const maxHearts = Math.min(480, Math.max(240, targets.length));
+        const colors = ['#f43f5e', '#ec4899', '#fb7185', '#ef4444', '#fde047', '#f9a8d4'];
+
+        for (let i = 0; i < maxHearts; i++) {
+          const tgt = targets[Math.floor((i / maxHearts) * targets.length)] || {
+            tx: w * 0.5 + (Math.random() - 0.5) * 200,
+            ty: h * 0.5 + (Math.random() - 0.5) * 100
+          };
+
+          const startX = Math.random() * w;
+          const startY = h + 20 + Math.random() * h * 0.4;
+
+          heartParticles.push({
+            x: startX,
+            y: startY,
+            vx: (Math.random() - 0.5) * 260,
+            vy: -(240 + Math.random() * 360),
+            tx: tgt.tx,
+            ty: tgt.ty,
+            size: 8 + Math.random() * 7,
+            color: colors[i % colors.length],
+            phase: Math.random() * Math.PI * 2,
+            alpha: 1.0
+          });
+        }
+      }
+
+      function drawHeartShape(ctx, x, y, size, color, alpha) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        const s = size * 0.5;
+        ctx.moveTo(0, s * 0.4);
+        ctx.bezierCurveTo(0, -s * 0.3, -s, -s * 0.3, -s, s * 0.2);
+        ctx.bezierCurveTo(-s, s * 0.7, 0, s * 1.0, 0, s * 1.3);
+        ctx.bezierCurveTo(0, s * 1.0, s, s * 0.7, s, s * 0.2);
+        ctx.bezierCurveTo(s, -s * 0.3, 0, -s * 0.3, 0, s * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function updateAndRenderHeartsOverlay(dt) {
+        const hCanvas = document.getElementById('heartsCanvas');
+        const hCtx = hCanvas.getContext('2d');
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        hCtx.clearRect(0, 0, w, h);
+        if (!state.heartsActive) return;
+
+        state.heartsTimer += dt;
+
+        const convergeProgress = smoothstep((state.heartsTimer - 1.1) / 1.4);
+        const fadeOutProgress = state.heartsTimer > 6.2 ? smoothstep((state.heartsTimer - 6.2) / 1.2) : 0;
+        const masterAlpha = 1 - fadeOutProgress;
+
+        if (masterAlpha <= 0.01) {
+          state.heartsActive = false;
+          heartParticles.length = 0;
+          return;
+        }
+
+        if (convergeProgress > 0.05) {
+          hCtx.save();
+          hCtx.fillStyle = `rgba(18, 6, 12, ${0.58 * convergeProgress * masterAlpha})`;
+          hCtx.fillRect(0, 0, w, h);
+          hCtx.restore();
+        }
+
+        heartParticles.forEach((hp) => {
+          if (state.heartsTimer < 1.1) {
+            hp.x += hp.vx * dt + Math.sin(state.time * 5 + hp.phase) * 90 * dt;
+            hp.y += hp.vy * dt;
+            hp.vy += 110 * dt;
+          } else {
+            const pull = Math.min(1, dt * 6.5);
+            const beat = Math.sin(state.time * 7 + hp.phase) * 1.8;
+            hp.x = lerp(hp.x, hp.tx, pull);
+            hp.y = lerp(hp.y, hp.ty + beat, pull);
+          }
+
+          if (state.heartsTimer > 6.2) {
+            hp.y -= 95 * dt;
+          }
+
+          const pulseSize = hp.size * (1 + Math.sin(state.time * 8 + hp.phase) * 0.14);
+          drawHeartShape(hCtx, hp.x, hp.y, pulseSize, hp.color, masterAlpha);
+        });
+
+        if (convergeProgress > 0.35) {
+          const textAlpha = ((convergeProgress - 0.35) / 0.65) * masterAlpha;
+          const cw = Math.min(900, Math.max(360, Math.floor(w * 0.9)));
+          const ch = Math.min(420, Math.max(220, Math.floor(h * 0.55)));
+          const offsetY = (h - ch) * 0.45;
+          const fontSize1 = Math.max(28, Math.min(68, Math.floor(cw * 0.085)));
+          const fontSize2 = Math.max(32, Math.min(76, Math.floor(cw * 0.095)));
+
+          hCtx.save();
+          hCtx.globalAlpha = textAlpha * 0.92;
+          hCtx.textAlign = 'center';
+          hCtx.textBaseline = 'middle';
+          hCtx.shadowColor = '#f43f5e';
+          hCtx.shadowBlur = 24;
+          hCtx.fillStyle = '#fff1f2';
+          hCtx.strokeStyle = '#be123c';
+          hCtx.lineWidth = 2.2;
+
+          hCtx.font = `900 ${fontSize1}px "Cairo", sans-serif`;
+          hCtx.strokeText('رغودا ملكة الجمال', w * 0.5, offsetY + ch * 0.36);
+          hCtx.fillText('رغودا ملكة الجمال', w * 0.5, offsetY + ch * 0.36);
+
+          hCtx.font = `900 ${fontSize2}px "Cairo", sans-serif`;
+          hCtx.strokeText('نحبك', w * 0.5, offsetY + ch * 0.72);
+          hCtx.fillText('نحبك', w * 0.5, offsetY + ch * 0.72);
+          hCtx.restore();
+        }
+      }
+
+      // ==========================================
+      // 4. 12 UNIQUE COMEDIC STONE-AGE CAVEMEN PROFILES
+      // ==========================================
+      const CAVEMAN_ARCHETYPES = [
+        {
+          name: 'بو كرش والعضمة',
+          torsoWidth: 1.45, bellyBulge: 16, heightScale: 0.96, headRadius: 12.5,
+          noseType: 'potato', noseSize: 8.5, teethType: 'single_buck',
+          hairStyle: 'topknot_bone', beardType: 'stubble', browType: 'unibrow_thick',
+          peltHue: 'leopard_gold', accessory: 'bone_hair', skinToneOffset: 0
+        },
+        {
+          name: 'الطويل النحيف بو كشة',
+          torsoWidth: 0.72, bellyBulge: -2, heightScale: 1.15, headRadius: 10.5,
+          noseType: 'long_droop', noseSize: 10, teethType: 'two_fangs',
+          hairStyle: 'giant_afro_twigs', beardType: 'goatee', browType: 'raised',
+          peltHue: 'hyena_tan', accessory: 'twigs', skinToneOffset: -12
+        },
+        {
+          name: 'القصير بو جمجمة',
+          torsoWidth: 1.32, bellyBulge: 10, heightScale: 0.80, headRadius: 14.0,
+          noseType: 'wide_flat', noseSize: 7.5, teethType: 'underbite_tusks',
+          hairStyle: 'messy_spikes', beardType: 'giant_bushy', browType: 'angry_v',
+          peltHue: 'tiger_orange', accessory: 'skull_helmet', skinToneOffset: 8
+        },
+        {
+          name: 'الأصلع بو خشم عود',
+          torsoWidth: 1.05, bellyBulge: 6, heightScale: 0.98, headRadius: 12.2,
+          noseType: 'giant_honker', noseSize: 12, teethType: 'gap_teeth',
+          hairStyle: 'three_hairs_bald', beardType: 'chin_curtain', browType: 'monobrow_wave',
+          peltHue: 'leopard_gold', accessory: 'stone_earring', skinToneOffset: 15
+        },
+        {
+          name: 'المعضل بو سيقان دجاجة',
+          torsoWidth: 1.55, bellyBulge: 2, heightScale: 1.06, headRadius: 11.0,
+          noseType: 'boxer_broken', noseSize: 8, teethType: 'gritted_big',
+          hairStyle: 'mohawk_bone', beardType: 'heavy_jaw', browType: 'unibrow_thick',
+          peltHue: 'dark_panther', accessory: 'tooth_necklace', skinToneOffset: -6
+        },
+        {
+          name: 'الشايب الأحدب بو ريشة',
+          torsoWidth: 0.88, bellyBulge: 5, heightScale: 0.88, headRadius: 12.0,
+          noseType: 'hooked', noseSize: 9.5, teethType: 'one_tooth_left',
+          hairStyle: 'wild_white_mane', beardType: 'long_white_wizard', browType: 'bushy_white',
+          peltHue: 'mammoth_brown', accessory: 'feathers', skinToneOffset: -18
+        },
+        {
+          name: 'كومة الشعر المذعور',
+          torsoWidth: 1.12, bellyBulge: 8, heightScale: 0.92, headRadius: 13.5,
+          noseType: 'button_big', noseSize: 7, teethType: 'single_buck',
+          hairStyle: 'full_hairball', beardType: 'full_hairball', browType: 'hidden',
+          peltHue: 'leopard_gold', accessory: 'double_bones', skinToneOffset: 4
+        },
+        {
+          name: 'الأحول بو ضرس مربع',
+          torsoWidth: 1.25, bellyBulge: 13, heightScale: 0.95, headRadius: 12.8,
+          noseType: 'potato', noseSize: 9, teethType: 'giant_square_tooth',
+          hairStyle: 'side_tufts', beardType: 'stubble', browType: 'arched_high',
+          peltHue: 'cheetah_yellow', accessory: 'horn_crown', skinToneOffset: 10
+        },
+        {
+          name: 'بو شنب مبروم',
+          torsoWidth: 1.18, bellyBulge: 7, heightScale: 1.02, headRadius: 11.8,
+          noseType: 'bulbous_red', noseSize: 9.5, teethType: 'underbite_tusks',
+          hairStyle: 'topknot_bone', beardType: 'giant_mustache', browType: 'unibrow_thick',
+          peltHue: 'tiger_orange', accessory: 'bone_hair', skinToneOffset: -5
+        },
+        {
+          name: 'النعسان المتين',
+          torsoWidth: 1.50, bellyBulge: 18, heightScale: 0.89, headRadius: 13.2,
+          noseType: 'wide_flat', noseSize: 8.5, teethType: 'two_fangs',
+          hairStyle: 'bedhead_bush', beardType: 'scruffy', browType: 'droopy',
+          peltHue: 'hyena_tan', accessory: 'tooth_necklace', skinToneOffset: 12
+        },
+        {
+          name: 'بو فك عريض',
+          torsoWidth: 1.28, bellyBulge: 4, heightScale: 1.08, headRadius: 12.6,
+          noseType: 'giant_honker', noseSize: 10.5, teethType: 'gap_teeth',
+          hairStyle: 'spiky_palm', beardType: 'heavy_jaw', browType: 'angry_v',
+          peltHue: 'mammoth_brown', accessory: 'tusk_pin', skinToneOffset: -10
+        },
+        {
+          name: 'المكهرب الصغير',
+          torsoWidth: 0.82, bellyBulge: 3, heightScale: 0.84, headRadius: 13.4,
+          noseType: 'button_big', noseSize: 7.5, teethType: 'single_buck',
+          hairStyle: 'electro_frizz', beardType: 'goatee', browType: 'monobrow_wave',
+          peltHue: 'leopard_gold', accessory: 'feathers', skinToneOffset: 6
+        }
+      ];
+
+      // نصف الشخصيات (6 من 12) إناث: ثلاث في الصف الخلفي وثلاث في الصف الأمامي
+      const FEMALE_PROFILES = {
+        1:  { name: 'الرشيقة أم ضفيرة', torsoWidth: 0.70, bellyBulge: 0, heightScale: 1.08, headRadius: 10.8, noseType: 'button_big', noseSize: 5.5, teethType: 'none', hairStyle: 'long_flowing', beardType: 'none', browType: 'raised', peltHue: 'hyena_tan', accessory: 'flower', skinToneOffset: -4, hairRGB: [58, 34, 18] },
+        3:  { name: 'أم عقد الأسنان', torsoWidth: 0.78, bellyBulge: 1, heightScale: 1.00, headRadius: 11.2, noseType: 'button_big', noseSize: 5.8, teethType: 'none', hairStyle: 'twin_braids', beardType: 'none', browType: 'raised', peltHue: 'leopard_gold', accessory: 'tooth_necklace', skinToneOffset: 6, hairRGB: [26, 18, 12] },
+        5:  { name: 'العجوز الحكيمة', torsoWidth: 0.86, bellyBulge: 3, heightScale: 0.90, headRadius: 11.5, noseType: 'button_big', noseSize: 6.2, teethType: 'none', hairStyle: 'bun_bone', beardType: 'none', browType: 'raised', peltHue: 'mammoth_brown', accessory: 'bone_hair', skinToneOffset: -10, hairRGB: [205, 205, 198] },
+        7:  { name: 'أم شعر كستنائي', torsoWidth: 0.74, bellyBulge: 0, heightScale: 1.04, headRadius: 10.8, noseType: 'button_big', noseSize: 5.4, teethType: 'none', hairStyle: 'long_flowing', beardType: 'none', browType: 'raised', peltHue: 'tiger_orange', accessory: 'flower', skinToneOffset: 8, hairRGB: [120, 66, 24] },
+        9:  { name: 'القصيرة أم ريشة', torsoWidth: 0.80, bellyBulge: 2, heightScale: 0.86, headRadius: 12.0, noseType: 'button_big', noseSize: 6.0, teethType: 'none', hairStyle: 'twin_braids', beardType: 'none', browType: 'raised', peltHue: 'cheetah_yellow', accessory: 'feathers', skinToneOffset: 10, hairRGB: [40, 24, 14] },
+        11: { name: 'الصغيرة أم كعكة', torsoWidth: 0.72, bellyBulge: 0, heightScale: 0.86, headRadius: 12.2, noseType: 'button_big', noseSize: 5.6, teethType: 'none', hairStyle: 'bun_bone', beardType: 'none', browType: 'raised', peltHue: 'leopard_gold', accessory: 'bone_hair', skinToneOffset: 2, hairRGB: [70, 40, 20] }
+      };
+      CAVEMAN_ARCHETYPES.forEach((a, i) => {
+        if (FEMALE_PROFILES[i]) Object.assign(a, FEMALE_PROFILES[i], { gender: 'f' });
+        else a.gender = 'm';
+      });
+
+      const characters = [];
+
+      function initCharacters() {
+        characters.length = 0;
+        const backAngles = [-2.68, -2.23, -1.80, -1.34, -0.91, -0.46];
+        const frontAngles = [2.72, 2.27, 1.86, 1.28, 0.87, 0.42];
+
+        backAngles.forEach((ang, idx) => {
+          characters.push(createCharData(idx, 'back', ang, 0.85, 0.75));
+        });
+        frontAngles.forEach((ang, idx) => {
+          characters.push(createCharData(6 + idx, 'front', ang, 1.0, 1.0));
+        });
+      }
+
+      function createCharData(id, row, angle, scale, depthDarken) {
+        const trait = CAVEMAN_ARCHETYPES[id % CAVEMAN_ARCHETYPES.length];
+        const spots = [];
+        for (let i = 0; i < 12; i++) {
+          spots.push({
+            u: (i + 0.4) / 12,
+            v: ((Math.sin(id * 19.7 + i * 4.3) + 1) * 0.5) * 0.72 + 0.14,
+            r: 2.3 + ((i * 7 + id) % 3) * 0.9
+          });
+        }
+        const enterStartTime = 1.5 + id * 0.48;
+        const enterDuration = 1.05;
+
+        return {
+          id,
+          row,
+          angle,
+          scale,
+          depthDarken,
+          waveIndex: id,
+          trait,
+          spots,
+          enterStartTime,
+          enterDuration,
+          enterProgress: 0,
+          p: 0,
+          prevP: 0,
+          velocityP: 0,
+          hairSwing: 0,
+          hairVel: 0,
+          bounceY: 0,
+          dustCooldown: 0,
+          screenX: 0,
+          screenY: 0,
+          targetX: 0,
+          targetY: 0,
+          facing: Math.cos(angle) >= 0 ? -1 : 1,
+          blastActive: false,
+          blastX: 0,
+          blastY: 0,
+          blastVX: 0,
+          blastVY: 0,
+          blastRot: 0,
+          blastVRot: 0,
+          charredAmount: 0,
+          dizzyStarsTimer: 0,
+          xrayTimer: 0
+        };
+      }
+
+      initCharacters();
+
+      const floatingDust = Array.from({ length: 75 }, (_, i) => ({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.8 + Math.random() * 2.1,
+        vx: (Math.random() - 0.5) * 0.00025,
+        vy: -0.00018 - Math.random() * 0.00035,
+        alpha: 0.18 + Math.random() * 0.55,
+        phase: i * 0.9
+      }));
+
+      const handDustClouds = [];
+      const explosionFireballs = [];
+      const flyingDebris = [];
+      const smiteBolts = [];
+      const musicalNotes = [];
+
+      const energyRings = [
+        { radius: 0.06, alpha: 0.85 },
+        { radius: 0.38, alpha: 0.52 },
+        { radius: 0.70, alpha: 0.22 }
+      ];
+
+      function spawnGroundDust(x, y, scale, facing, strength = 1) {
+        const count = Math.floor(12 * strength);
+        for (let i = 0; i < count; i++) {
+          const spreadAngle = -Math.PI * (0.05 + Math.random() * 0.9);
+          const spd = (0.4 + Math.random() * 2.2) * scale;
+          handDustClouds.push({
+            x: x + (Math.random() - 0.5) * 16 * scale,
+            y: y + (Math.random() - 0.5) * 4 * scale,
+            vx: Math.cos(spreadAngle) * spd + facing * 0.35 * scale,
+            vy: Math.sin(spreadAngle) * spd * 0.65 - 0.25 * scale,
+            size: (2.2 + Math.random() * 4.5) * scale,
+            alpha: 0.68 + Math.random() * 0.3,
+            decay: 0.013 + Math.random() * 0.01,
+            isPebble: i % 4 === 0,
+            golden: Math.random() > 0.45
+          });
+        }
+      }
+
+      function spawnMusicNote(centerX, centerY, scale) {
+        const symbols = ['♪', '♫', '♬', '♩'];
+        musicalNotes.push({
+          x: centerX + (55 + (Math.random() - 0.5) * 50) * scale,
+          y: centerY - (75 + Math.random() * 20) * scale,
+          vx: (Math.random() - 0.5) * 28,
+          vy: -(38 + Math.random() * 26),
+          symbol: symbols[Math.floor(Math.random() * symbols.length)],
+          alpha: 1.0,
+          size: (18 + Math.random() * 10) * scale,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      // ==========================================
+      // 5. TRIGGER "الجلد" (COMEDIC EXPLOSION)
+      // ==========================================
+      function triggerSmiteExplosion(targetChar = null) {
+        state.smiteActive = true;
+        state.smiteTimer = 0;
+        state.panicSpeedBoost = 2.2;
+        playMassiveExplosionAndScreams();
+
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const centerX = w * 0.5 + state.userDragOffset;
+        const centerY = h * 0.61;
+
+        const list = targetChar
+          ? [targetChar]
+          : characters.filter((c) => c.enterProgress > 0.05);
+
+        list.forEach((ch) => {
+          smiteBolts.push({
+            x1: centerX,
+            y1: centerY - 115,
+            x2: ch.screenX,
+            y2: ch.screenY - 55 * ch.scale,
+            life: 0.38
+          });
+
+          ch.blastActive = true;
+          ch.blastX = 0;
+          ch.blastY = -12;
+          const outDir = ch.screenX >= centerX ? 1 : -1;
+          ch.blastVX = outDir * (140 + Math.random() * 220) + (Math.random() - 0.5) * 120;
+          ch.blastVY = -(460 + Math.random() * 340);
+          ch.blastRot = 0;
+          ch.blastVRot = outDir * (10 + Math.random() * 14);
+          ch.charredAmount = 1.0;
+          ch.dizzyStarsTimer = 4.5;
+          ch.xrayTimer = 0.24;
+
+          for (let f = 0; f < 16; f++) {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 1.5 + Math.random() * 7.5;
+            explosionFireballs.push({
+              x: ch.screenX + (Math.random() - 0.5) * 24,
+              y: ch.screenY - 40 * ch.scale + (Math.random() - 0.5) * 24,
+              vx: Math.cos(ang) * spd,
+              vy: Math.sin(ang) * spd - 1.8,
+              r: (10 + Math.random() * 24) * ch.scale,
+              alpha: 1.0,
+              decay: 0.018 + Math.random() * 0.015,
+              type: f < 7 ? 'fire' : f < 12 ? 'spark' : 'smoke'
+            });
+          }
+
+          for (let b = 0; b < 2; b++) {
+            flyingDebris.push({
+              x: ch.screenX,
+              y: ch.screenY - 60 * ch.scale,
+              vx: (Math.random() - 0.5) * 380,
+              vy: -(320 + Math.random() * 320),
+              rot: Math.random() * Math.PI * 2,
+              vRot: (Math.random() - 0.5) * 18,
+              type: b % 2 === 0 ? 'bone' : 'club',
+              alpha: 1.0
+            });
+          }
+        });
+      }
+
+      // ==========================================
+      // 6. KINEMATICS & UNIQUE COMEDIC CAVEMAN RENDERER
+      // ==========================================
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function smoothstep(t) {
+        const c = Math.max(0, Math.min(1, t));
+        return c * c * (3 - 2 * c);
+      }
+
+      function solveCharacterAnatomy(p, bounceY, time, ch) {
+        const hScale = ch.trait.heightScale;
+        const breath = Math.sin(time * 3.0 + ch.id * 0.9) * 1.8 * (1 - p * 0.5);
+
+        const k1 = {
+          ankle: { x: 0, y: 0 },
+          knee: { x: 6, y: -35 * hScale },
+          hip: { x: -6, y: -72 * hScale },
+          waist: { x: -2, y: (-94 + breath * 0.4) * hScale },
+          chest: { x: 5, y: (-120 + breath) * hScale },
+          neck: { x: 8, y: (-132 + breath) * hScale },
+          head: { x: 11, y: (-146 + breath) * hScale },
+          headPitch: -0.45,
+          shoulder: { x: 7, y: (-118 + breath) * hScale },
+          elbow: { x: 26, y: (-148 + breath * 1.2) * hScale },
+          wrist: { x: 40, y: (-178 + breath * 1.4) * hScale },
+          handAngle: -0.95
+        };
+
+        const k2 = {
+          ankle: { x: -6, y: 0 },
+          knee: { x: 20, y: -15 * hScale },
+          hip: { x: -16, y: -45 * hScale },
+          waist: { x: 4, y: -64 * hScale },
+          chest: { x: 25, y: -76 * hScale },
+          neck: { x: 34, y: -80 * hScale },
+          head: { x: 44, y: -82 * hScale },
+          headPitch: 0.25,
+          shoulder: { x: 24, y: -72 * hScale },
+          elbow: { x: 38, y: -45 * hScale },
+          wrist: { x: 52, y: -20 * hScale },
+          handAngle: 0.65
+        };
+
+        const k3 = {
+          ankle: { x: -14, y: -2 },
+          knee: { x: 19, y: -2 },
+          hip: { x: -16, y: -28 * hScale + bounceY },
+          waist: { x: 8, y: -42 * hScale + bounceY * 0.9 },
+          chest: { x: 34, y: -23 * hScale + bounceY * 0.7 },
+          neck: { x: 43, y: -14 + bounceY * 0.4 },
+          head: { x: 52, y: -8 + bounceY * 0.3 },
+          headPitch: 0.98,
+          shoulder: { x: 34, y: -20 + bounceY * 0.6 },
+          elbow: { x: 50, y: -7 },
+          wrist: { x: 72, y: -2 },
+          handAngle: 0.08
+        };
+
+        const out = {};
+        const keys = Object.keys(k1);
+        if (p <= 0.5) {
+          const t = smoothstep(p / 0.5);
+          keys.forEach((k) => {
+            if (typeof k1[k] === 'number') out[k] = lerp(k1[k], k2[k], t);
+            else out[k] = { x: lerp(k1[k].x, k2[k].x, t), y: lerp(k1[k].y, k2[k].y, t) };
+          });
+        } else {
+          const t = smoothstep((p - 0.5) / 0.5);
+          keys.forEach((k) => {
+            if (typeof k2[k] === 'number') out[k] = lerp(k2[k], k3[k], t);
+            else out[k] = { x: lerp(k2[k].x, k3[k].x, t), y: lerp(k2[k].y, k3[k].y, t) };
+          });
+        }
+
+        if (ch.enterProgress < 1 && !ch.blastActive) {
+          const walkCycle = Math.sin(state.sceneElapsed * 16 + ch.id * 1.7);
+          out.knee.x = 8 + walkCycle * 10;
+          out.knee.y = -32 * hScale - Math.abs(walkCycle) * 6;
+          out.ankle.x = walkCycle * 14;
+          out.ankle.y = -Math.max(0, walkCycle) * 8;
+          out.elbow.x = 18 - walkCycle * 10;
+          out.elbow.y = -98 * hScale;
+          out.wrist.x = 30 - walkCycle * 14;
+          out.wrist.y = -112 * hScale;
+          out.headPitch = -0.15 + Math.sin(state.sceneElapsed * 16) * 0.08;
+        }
+
+        if (state.mode === 'piano' && ch.enterProgress >= 1 && !ch.blastActive) {
+          const clapWave = (Math.sin(time * 17 + ch.id * 0.9) + 1) * 0.5;
+          const sway = Math.sin(time * 4.2 + ch.id) * 4;
+          out.chest.x += sway * 0.5;
+          out.head.x += sway * 0.8;
+          out.head.y += Math.abs(Math.sin(time * 8.4 + ch.id)) * 3.5;
+          out.headPitch = -0.22 + Math.sin(time * 4.2 + ch.id) * 0.1;
+          out.elbow.x = 24;
+          out.elbow.y = -96 * hScale;
+          out.wrist.x = 38 + clapWave * 9;
+          out.wrist.y = (-114 + clapWave * 8) * hScale;
+          out.handAngle = -0.35 + clapWave * 0.25;
+          out.clapWave = clapWave;
+        }
+
+        if (ch.blastActive) {
+          const flail = Math.sin(time * 28 + ch.id);
+          out.wrist.x += flail * 18;
+          out.wrist.y -= 25 + Math.cos(time * 28) * 18;
+          out.knee.y += flail * 12;
+          out.headPitch = -0.65;
+        }
+
+        out.p = p;
+        return out;
+      }
+
+      function drawTaperedLimb(ctx, p1, p2, r1, r2, baseColor, litColor, rimAlpha) {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+
+        ctx.save();
+        ctx.fillStyle = baseColor;
+        ctx.beginPath();
+        ctx.moveTo(p1.x + nx * r1, p1.y + ny * r1);
+        ctx.lineTo(p2.x + nx * r2, p2.y + ny * r2);
+        ctx.arc(p2.x, p2.y, r2, Math.atan2(ny, nx), Math.atan2(-ny, -nx));
+        ctx.lineTo(p1.x - nx * r1, p1.y - ny * r1);
+        ctx.arc(p1.x, p1.y, r1, Math.atan2(-ny, -nx), Math.atan2(ny, nx));
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.72)';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        if (rimAlpha > 0.08 && litColor) {
+          ctx.strokeStyle = litColor;
+          ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.moveTo(p1.x + nx * (r1 * 0.8), p1.y + ny * (r1 * 0.8));
+          ctx.lineTo(p2.x + nx * (r2 * 0.8), p2.y + ny * (r2 * 0.8));
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawTribeCharacter(ctx, ch, sceneScale) {
+        if (ch.enterProgress <= 0.001) return;
+
+        const rig = solveCharacterAnatomy(ch.p, ch.bounceY, state.time, ch);
+        const scale = ch.scale * sceneScale;
+        const t = ch.trait;
+
+        const lightLift = Math.pow(1 - rig.p, 1.35) * state.bloomIntensity;
+        const dDark = ch.depthDarken;
+        const rimAlpha = Math.min(1, (0.22 + lightLift * 0.78) * dDark);
+
+        const sootFactor = 1 - ch.charredAmount * 0.72;
+        const sR = Math.max(22, Math.round((lerp(105, 192, Math.min(1, lightLift)) + t.skinToneOffset) * dDark * sootFactor));
+        const sG = Math.max(18, Math.round((lerp(68, 130, Math.min(1, lightLift)) + t.skinToneOffset * 0.7) * dDark * sootFactor));
+        const sB = Math.max(14, Math.round((lerp(45, 78, Math.min(1, lightLift)) + t.skinToneOffset * 0.5) * dDark * sootFactor));
+        const skinMain = `rgb(${sR}, ${sG}, ${sB})`;
+        const skinBack = `rgb(${Math.round(sR * 0.58)}, ${Math.round(sG * 0.56)}, ${Math.round(sB * 0.54)})`;
+        const goldenRim = `rgba(255, 230, 135, ${rimAlpha * 0.9})`;
+
+        const walkHopY = ch.enterProgress < 1
+          ? -Math.abs(Math.sin(state.sceneElapsed * 16 + ch.id * 1.7)) * 9 * scale
+          : 0;
+
+        ctx.save();
+        ctx.translate(ch.screenX + ch.blastX * scale, ch.screenY + ch.blastY * scale + walkHopY);
+        ctx.scale(scale * ch.facing, scale);
+
+        if (ch.blastActive || Math.abs(ch.blastRot) > 0.01) {
+          ctx.translate(0, -65);
+          ctx.rotate(ch.blastRot);
+          ctx.translate(0, 65);
+        }
+
+        if (!ch.blastActive) {
+          const shWidth = lerp(42, 82, rig.p) * t.torsoWidth * 0.85;
+          const shCenterX = lerp(4, 30, rig.p);
+          const shGrad = ctx.createRadialGradient(shCenterX, 2, 3, shCenterX, 2, shWidth);
+          shGrad.addColorStop(0, 'rgba(4, 2, 1, 0.85)');
+          shGrad.addColorStop(0.6, 'rgba(12, 8, 4, 0.42)');
+          shGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = shGrad;
+          ctx.beginPath();
+          ctx.ellipse(shCenterX, 3, shWidth, 10.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (ch.xrayTimer > 0 && Math.floor(state.time * 45) % 2 === 0) {
+          drawCartoonXRaySkeleton(ctx, rig, t);
+          ctx.restore();
+          return;
+        }
+
+        const legThick = 8.5 * (t.torsoWidth > 1.3 ? 1.15 : 0.9);
+        const oppWalkX = ch.enterProgress < 1 ? -rig.ankle.x * 0.8 : -7;
+        drawTaperedLimb(ctx, { x: rig.hip.x - 5, y: rig.hip.y + 2 }, { x: rig.knee.x - 6, y: rig.knee.y + 2 }, legThick, legThick * 0.72, skinBack, null, 0);
+        drawTaperedLimb(ctx, { x: rig.knee.x - 6, y: rig.knee.y + 2 }, { x: oppWalkX, y: rig.ankle.y + 1 }, legThick * 0.7, legThick * 0.5, skinBack, null, 0);
+
+        const backWristOffset = (state.mode === 'piano' && ch.enterProgress >= 1)
+          ? { x: rig.wrist.x - (1 - (rig.clapWave || 0)) * 12, y: rig.wrist.y - (1 - (rig.clapWave || 0)) * 8 }
+          : { x: rig.wrist.x - 6, y: rig.wrist.y - 3 };
+        drawTaperedLimb(ctx, { x: rig.shoulder.x - 4, y: rig.shoulder.y + 3 }, { x: rig.elbow.x - 7, y: rig.elbow.y - 4 }, 6.5, 4.8, skinBack, null, 0);
+        drawTaperedLimb(ctx, { x: rig.elbow.x - 7, y: rig.elbow.y - 4 }, backWristOffset, 4.6, 3.6, skinBack, null, 0);
+
+        drawTaperedLimb(ctx, rig.hip, rig.knee, legThick * 1.05, legThick * 0.74, skinMain, goldenRim, rimAlpha * 0.6);
+        drawTaperedLimb(ctx, rig.knee, rig.ankle, legThick * 0.72, legThick * 0.52, skinMain, goldenRim, rimAlpha * 0.5);
+
+        ctx.fillStyle = skinMain;
+        ctx.beginPath();
+        ctx.arc(rig.knee.x + 2, rig.knee.y, 4.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = skinMain;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.75)';
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.ellipse(rig.ankle.x + 5, rig.ankle.y, 9.5, 4.2, rig.p * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(rig.ankle.x + 13, rig.ankle.y - 0.5, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        const backW = 10 * t.torsoWidth;
+        const frontW = 10 * t.torsoWidth + t.bellyBulge;
+        ctx.save();
+        ctx.fillStyle = skinMain;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.75)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(rig.hip.x - backW * 0.8, rig.hip.y);
+        ctx.quadraticCurveTo(rig.waist.x - backW, rig.waist.y - 4, rig.chest.x - backW * 0.9, rig.chest.y);
+        ctx.lineTo(rig.chest.x + backW * 0.9, rig.chest.y + 2);
+        ctx.quadraticCurveTo(rig.waist.x + frontW, rig.waist.y + 6, rig.hip.x + backW * 0.85, rig.hip.y + 3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        drawUniqueCavemanPelt(ctx, rig, ch, lightLift, dDark, sootFactor);
+        drawUniqueComedicHead(ctx, rig, ch, skinMain, lightLift, rimAlpha, dDark, sootFactor);
+
+        const armThick = 6.8 * (t.torsoWidth > 1.35 ? 1.2 : 0.95);
+        drawTaperedLimb(ctx, rig.shoulder, rig.elbow, armThick, armThick * 0.76, skinMain, goldenRim, rimAlpha);
+        drawTaperedLimb(ctx, rig.elbow, rig.wrist, armThick * 0.74, armThick * 0.56, skinMain, goldenRim, rimAlpha);
+
+        ctx.save();
+        ctx.translate(rig.wrist.x, rig.wrist.y);
+        ctx.rotate(rig.handAngle);
+        ctx.fillStyle = skinMain;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.75)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(4.5, 0, 6.2, 3.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = skinMain;
+        ctx.lineWidth = 2.6;
+        ctx.lineCap = 'round';
+        for (let f = -1; f <= 1; f++) {
+          ctx.beginPath();
+          ctx.moveTo(6, f * 1.8);
+          ctx.lineTo(13, f * 3.0 - 0.6);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        if (state.mode === 'piano' && ch.enterProgress >= 1 && !ch.blastActive && (rig.clapWave || 0) > 0.82) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 238, 150, 0.85)';
+          ctx.lineWidth = 1.8;
+          for (let c = 0; c < 4; c++) {
+            const cAng = (c / 4) * Math.PI * 2 + state.time * 4;
+            ctx.beginPath();
+            ctx.moveTo(rig.wrist.x + 6 + Math.cos(cAng) * 5, rig.wrist.y + Math.sin(cAng) * 5);
+            ctx.lineTo(rig.wrist.x + 6 + Math.cos(cAng) * 11, rig.wrist.y + Math.sin(cAng) * 11);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        if (ch.dizzyStarsTimer > 0 && !ch.blastActive) {
+          ctx.save();
+          ctx.translate(rig.head.x, rig.head.y - 24);
+          for (let s = 0; s < 3; s++) {
+            const ang = state.time * 6.5 + (s * Math.PI * 2) / 3;
+            const sx = Math.cos(ang) * 16;
+            const sy = Math.sin(ang) * 5;
+            ctx.fillStyle = s % 2 === 0 ? '#fde047' : '#fb923c';
+            ctx.beginPath();
+            ctx.arc(sx, sy, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      function drawCartoonXRaySkeleton(ctx, rig, t) {
+        ctx.save();
+        ctx.strokeStyle = '#e0f2fe';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(rig.ankle.x, rig.ankle.y);
+        ctx.lineTo(rig.knee.x, rig.knee.y);
+        ctx.lineTo(rig.hip.x, rig.hip.y);
+        ctx.lineTo(rig.chest.x, rig.chest.y);
+        ctx.lineTo(rig.head.x, rig.head.y);
+        ctx.moveTo(rig.shoulder.x, rig.shoulder.y);
+        ctx.lineTo(rig.elbow.x, rig.elbow.y);
+        ctx.lineTo(rig.wrist.x, rig.wrist.y);
+        ctx.stroke();
+
+        for (let r = 0; r < 3; r++) {
+          const ry = lerp(rig.chest.y, rig.waist.y, r / 3);
+          ctx.beginPath();
+          ctx.moveTo(rig.chest.x - 9, ry);
+          ctx.lineTo(rig.chest.x + 9, ry);
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.arc(rig.head.x, rig.head.y, t.headRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#090604';
+        ctx.beginPath();
+        ctx.arc(rig.head.x + 4, rig.head.y - 2, 3.2, 0, Math.PI * 2);
+        ctx.arc(rig.head.x - 2, rig.head.y - 2, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawUniqueCavemanPelt(ctx, rig, ch, lightLift, dDark, sootFactor) {
+        ctx.save();
+        const t = ch.trait;
+        const lum = Math.min(1.2, 0.35 + lightLift * 0.85) * dDark * sootFactor;
+
+        let baseRGB = [212, 148, 58];
+        if (t.peltHue === 'tiger_orange') baseRGB = [225, 112, 38];
+        else if (t.peltHue === 'hyena_tan') baseRGB = [178, 142, 92];
+        else if (t.peltHue === 'mammoth_brown') baseRGB = [128, 78, 45];
+        else if (t.peltHue === 'dark_panther') baseRGB = [72, 58, 52];
+        else if (t.peltHue === 'cheetah_yellow') baseRGB = [232, 182, 72];
+
+        const r = Math.round(baseRGB[0] * lum);
+        const g = Math.round(baseRGB[1] * lum);
+        const b = Math.round(baseRGB[2] * lum);
+
+        const peltLit = `rgb(${Math.min(255, Math.round(r * 1.25))}, ${Math.min(255, Math.round(g * 1.25))}, ${Math.min(255, Math.round(b * 1.15))})`;
+        const peltMid = `rgb(${r}, ${g}, ${b})`;
+        const peltDark = `rgb(${Math.round(r * 0.45)}, ${Math.round(g * 0.42)}, ${Math.round(b * 0.38)})`;
+
+        const peltGrad = ctx.createLinearGradient(rig.shoulder.x + 10, rig.shoulder.y - 6, rig.hip.x - 18, rig.hip.y + 20);
+        peltGrad.addColorStop(0, peltLit);
+        peltGrad.addColorStop(0.55, peltMid);
+        peltGrad.addColorStop(1, peltDark);
+
+        const wScale = t.torsoWidth;
+        const archX = rig.waist.x - lerp(12, 17, rig.p) * wScale;
+        const archY = rig.waist.y - lerp(4, 16, rig.p);
+        const isF = t.gender === 'f';
+        const flareF = isF ? 5 : 0;
+        const hemY = rig.hip.y + lerp(isF ? 32 : 20, isF ? 13 : 9, rig.p) + ch.hairSwing * 2.8;
+        const backHemX = rig.hip.x - lerp(15, 11, rig.p) * wScale;
+        const frontHemX = lerp(rig.hip.x + 12 * wScale + t.bellyBulge * 0.6, rig.chest.x + 4, 0.35);
+
+        ctx.fillStyle = peltGrad;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(rig.shoulder.x + 6, rig.shoulder.y - 3);
+        ctx.quadraticCurveTo(archX, archY, backHemX - flareF, hemY - 4);
+
+        const teeth = 7;
+        for (let i = 1; i <= teeth; i++) {
+          const frac = i / teeth;
+          const tx = lerp(backHemX - flareF, frontHemX + flareF, frac);
+          const jag = (isF ? (i % 2 === 0 ? 4 : -1.5) : (i % 2 === 0 ? 7.5 : -3.5)) * (1 - rig.p * 0.25);
+          ctx.lineTo(tx, hemY + jag);
+        }
+
+        ctx.quadraticCurveTo(
+          lerp(rig.hip.x + 10, rig.chest.x + 8, 0.5) + t.bellyBulge * 0.5,
+          lerp(rig.hip.y, rig.chest.y, 0.5),
+          rig.shoulder.x + 6,
+          rig.shoulder.y - 3
+        );
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.save();
+        ctx.clip();
+        ch.spots.forEach((sp) => {
+          const sx = lerp(rig.shoulder.x + 2, backHemX + 8, sp.u) + (sp.v - 0.5) * 20 * wScale;
+          const sy = lerp(rig.shoulder.y + 4, hemY - 3, sp.u) + (sp.v - 0.5) * 10;
+
+          if (t.peltHue === 'tiger_orange') {
+            ctx.strokeStyle = `rgba(24, 12, 4, ${0.85 * dDark})`;
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(sx - 5, sy - 3);
+            ctx.lineTo(sx + 5, sy + 3);
+            ctx.stroke();
+          } else {
+            ctx.fillStyle = `rgba(115, 62, 18, ${0.65 * dDark})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, sp.r * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = `rgba(24, 12, 5, ${0.88 * dDark})`;
+            ctx.beginPath();
+            ctx.arc(sx - sp.r * 0.45, sy - sp.r * 0.3, sp.r * 0.62, 0, Math.PI * 2);
+            ctx.arc(sx + sp.r * 0.5, sy + sp.r * 0.25, sp.r * 0.58, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.strokeStyle = `rgba(48, 25, 10, ${0.95 * dDark})`;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(rig.shoulder.x + 5, rig.shoulder.y);
+        ctx.lineTo(rig.hip.x - 5, rig.hip.y + 3);
+        ctx.stroke();
+
+        if (isF) {
+          // حزام حبل عند الخصر
+          ctx.strokeStyle = `rgba(88, 52, 24, ${0.95 * dDark})`;
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.moveTo(rig.waist.x - 14, rig.waist.y + 3);
+          ctx.quadraticCurveTo(rig.waist.x + 2, rig.waist.y + 9, rig.waist.x + 16, rig.waist.y + 4);
+          ctx.stroke();
+        }
+
+        if (t.accessory === 'tooth_necklace') {
+          ctx.fillStyle = '#fef3c7';
+          for (let n = -1; n <= 1; n++) {
+            ctx.beginPath();
+            ctx.moveTo(rig.shoulder.x + 3 + n * 4, rig.shoulder.y + 3);
+            ctx.lineTo(rig.shoulder.x + 5 + n * 4, rig.shoulder.y + 11);
+            ctx.lineTo(rig.shoulder.x + 1 + n * 4, rig.shoulder.y + 11);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+        ctx.restore();
+      }
+
+      function drawUniqueComedicHead(ctx, rig, ch, skinMain, lightLift, rimAlpha, dDark, sootFactor) {
+        const t = ch.trait;
+        const headR = t.headRadius;
+
+        ctx.strokeStyle = skinMain;
+        ctx.lineWidth = 8.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(rig.chest.x + 2, rig.chest.y);
+        ctx.lineTo(rig.head.x, rig.head.y);
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(rig.head.x, rig.head.y);
+        ctx.rotate(rig.headPitch);
+
+        if (t.gender === 'f') drawFemaleBackHair(ctx, ch, t, headR, dDark, sootFactor);
+
+        ctx.fillStyle = skinMain;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, headR, 0, Math.PI * 2);
+        ctx.arc(5, 4, headR * 0.68, -0.3, Math.PI * 0.85);
+        ctx.fill();
+        ctx.stroke();
+
+        if (rimAlpha > 0.12) {
+          const faceGlow = ctx.createRadialGradient(headR * 0.6, -3, 1, 3, -1, headR * 1.15);
+          faceGlow.addColorStop(0, `rgba(255, 242, 175, ${rimAlpha})`);
+          faceGlow.addColorStop(0.55, `rgba(245, 180, 55, ${rimAlpha * 0.55})`);
+          faceGlow.addColorStop(1, 'rgba(245, 180, 55, 0)');
+          ctx.fillStyle = faceGlow;
+          ctx.beginPath();
+          ctx.arc(0, 0, headR * 1.05, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const hairBase = t.hairRGB || (t.hairStyle === 'wild_white_mane' ? [215, 210, 198] : [26, 18, 12]);
+        const hairColor = `rgb(${Math.round(hairBase[0] * dDark * sootFactor)}, ${Math.round(hairBase[1] * dDark * sootFactor)}, ${Math.round(hairBase[2] * dDark * sootFactor)})`;
+
+        ctx.fillStyle = hairColor;
+        if (t.beardType === 'giant_bushy') {
+          ctx.beginPath();
+          ctx.arc(4, 7, headR * 0.95, -0.2, Math.PI * 1.1);
+          ctx.fill();
+        } else if (t.beardType === 'long_white_wizard') {
+          ctx.beginPath();
+          ctx.moveTo(0, 4);
+          ctx.quadraticCurveTo(14, 18, 8 + ch.hairSwing * 6, 28);
+          ctx.quadraticCurveTo(-2, 22, -4, 6);
+          ctx.closePath();
+          ctx.fill();
+        } else if (t.beardType === 'giant_mustache') {
+          ctx.beginPath();
+          ctx.moveTo(8, 3);
+          ctx.quadraticCurveTo(18, 0, 22, 9);
+          ctx.quadraticCurveTo(12, 8, 5, 5);
+          ctx.fill();
+        } else if (t.beardType === 'stubble' || t.beardType === 'heavy_jaw') {
+          ctx.fillStyle = 'rgba(25, 16, 10, 0.38)';
+          ctx.beginPath();
+          ctx.arc(5, 5, headR * 0.62, -0.1, Math.PI * 0.85);
+          ctx.fill();
+        }
+
+        ctx.save();
+        if (ch.blastActive || ch.dizzyStarsTimer > 2.5) {
+          ctx.fillStyle = '#3b0714';
+          ctx.beginPath();
+          ctx.ellipse(8.5, 5.5, 4.8, 5.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = t.gender === 'f' ? '#9f1239' : '#3b0714';
+          ctx.beginPath();
+          ctx.arc(7.5, 4.5, (t.gender === 'f' ? 0.72 : 1) * (state.mode === 'piano' ? 5.2 : 4.2), 0, Math.PI);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = '#fffbeb';
+        ctx.strokeStyle = '#1c1917';
+        ctx.lineWidth = 0.8;
+        if (t.teethType === 'single_buck' || t.teethType === 'giant_square_tooth') {
+          ctx.fillRect(7.5, 4.2, 3.6, 4.2);
+          ctx.strokeRect(7.5, 4.2, 3.6, 4.2);
+        } else if (t.teethType === 'underbite_tusks') {
+          ctx.beginPath();
+          ctx.moveTo(7, 7);
+          ctx.lineTo(9, 1.5);
+          ctx.lineTo(11, 7);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else if (t.teethType === 'two_fangs') {
+          ctx.fillRect(6.2, 4.2, 2.2, 3.5);
+          ctx.fillRect(9.5, 4.2, 2.2, 3.5);
+        }
+        ctx.restore();
+
+        ctx.fillStyle = t.noseType === 'bulbous_red'
+          ? `rgb(${Math.min(255, Math.round(215 * dDark * sootFactor))}, ${Math.round(95 * dDark * sootFactor)}, ${Math.round(75 * dDark * sootFactor)})`
+          : skinMain;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.85)';
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        if (t.noseType === 'long_droop' || t.noseType === 'hooked') {
+          ctx.ellipse(headR + 3, 1.5, t.noseSize * 0.75, 4.2, 0.35, 0, Math.PI * 2);
+        } else {
+          ctx.arc(headR + 1.5, -0.5, t.noseSize * 0.58, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        const eyeRadius = (ch.blastActive || ch.dizzyStarsTimer > 2.2) ? 5.2 : 3.8;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#1c1917';
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.arc(6.5, -3.5, eyeRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#090604';
+        if (ch.dizzyStarsTimer > 2.0 && !ch.blastActive) {
+          ctx.strokeStyle = '#090604';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(4.8, -5.2);
+          ctx.lineTo(8.2, -1.8);
+          ctx.moveTo(8.2, -5.2);
+          ctx.lineTo(4.8, -1.8);
+          ctx.stroke();
+        } else {
+          const pupilX = ch.blastActive ? 6.5 : 8.0;
+          const pupilY = ch.blastActive ? -3.5 : -4.6;
+          ctx.beginPath();
+          ctx.arc(pupilX, pupilY, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.strokeStyle = hairColor;
+        ctx.lineWidth = t.gender === 'f' ? 1.7 : 3.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(2, -7.5);
+        ctx.lineTo(11, -6.5);
+        ctx.stroke();
+
+        if (t.gender === 'f') {
+          // رموش + خدود وردية
+          ctx.strokeStyle = '#1c1917';
+          ctx.lineWidth = 1.1;
+          for (let l = 0; l < 3; l++) {
+            ctx.beginPath();
+            ctx.moveTo(8.6 + l * 0.9, -6.9 + l * 0.6);
+            ctx.lineTo(11.2 + l * 1.3, -9.0 + l * 1.2);
+            ctx.stroke();
+          }
+          ctx.fillStyle = 'rgba(244, 114, 142, 0.38)';
+          ctx.beginPath();
+          ctx.arc(5.2, 3.2, 2.9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = hairColor;
+        if (t.gender === 'f') {
+          drawFemaleTopHair(ctx, ch, t, headR);
+        } else if (t.hairStyle === 'three_hairs_bald') {
+          ctx.strokeStyle = hairColor;
+          ctx.lineWidth = 1.8;
+          for (let h = -1; h <= 1; h++) {
+            ctx.beginPath();
+            ctx.moveTo(h * 3, -headR);
+            ctx.quadraticCurveTo(h * 6 + ch.hairSwing * 8, -headR - 10, h * 9 + ch.hairSwing * 12, -headR - 14);
+            ctx.stroke();
+          }
+        } else if (t.hairStyle === 'giant_afro_twigs' || t.hairStyle === 'full_hairball') {
+          const bushR = t.hairStyle === 'full_hairball' ? headR * 1.45 : headR * 1.3;
+          ctx.beginPath();
+          for (let a = 0; a < 12; a++) {
+            const ang = (a / 12) * Math.PI * 2;
+            const bx = -3 + Math.cos(ang) * bushR + ch.hairSwing * 3;
+            const by = -5 + Math.sin(ang) * bushR;
+            ctx.moveTo(bx, by);
+            ctx.arc(bx, by, 6.5, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(-2, -headR + 1);
+          const locks = 8;
+          for (let i = 0; i < locks; i++) {
+            const baseAng = Math.PI * (0.58 + i * 0.16) + ch.hairSwing * 0.24;
+            const lockLen = headR + 5 + ((i % 2) * 6);
+            ctx.lineTo(Math.cos(baseAng) * lockLen, Math.sin(baseAng) * lockLen);
+            const valleyAng = baseAng + 0.08;
+            ctx.lineTo(Math.cos(valleyAng) * (headR - 1), Math.sin(valleyAng) * (headR - 1));
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        if (t.accessory === 'bone_hair' || t.accessory === 'double_bones') {
+          drawCartoonBone(ctx, -2, -headR - 5, 0.2 + ch.hairSwing * 0.2, 11);
+        } else if (t.accessory === 'skull_helmet') {
+          ctx.fillStyle = '#f5f5f4';
+          ctx.strokeStyle = '#292524';
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.arc(0, -headR * 0.55, headR * 0.95, Math.PI * 0.95, Math.PI * 2.05);
+          ctx.fill();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-4, -headR);
+          ctx.quadraticCurveTo(-14, -headR - 12, -8, -headR - 18);
+          ctx.lineTo(-1, -headR - 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (t.accessory === 'feathers') {
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.ellipse(-4, -headR - 9, 3.2, 9.5, -0.35 + ch.hairSwing * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#eab308';
+          ctx.beginPath();
+          ctx.ellipse(-8, -headR - 7, 2.8, 8.0, -0.65 + ch.hairSwing * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (t.accessory === 'flower') {
+          ctx.save();
+          ctx.translate(2, -headR - 1);
+          ctx.fillStyle = '#fb7185';
+          ctx.strokeStyle = '#881337';
+          ctx.lineWidth = 0.8;
+          for (let pt = 0; pt < 5; pt++) {
+            const pa = (pt / 5) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(Math.cos(pa) * 3.2, Math.sin(pa) * 3.2, 2.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(0, 0, 1.9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else if (t.accessory === 'stone_earring') {
+          ctx.strokeStyle = '#d6d3d1';
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.arc(-2, 4, 4.8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // ---------- شعر الإناث ----------
+      function drawFemaleBackHair(ctx, ch, t, headR, dDark, sootFactor) {
+        const base = t.hairRGB || [26, 18, 12];
+        const col = `rgb(${Math.round(base[0] * dDark * sootFactor)}, ${Math.round(base[1] * dDark * sootFactor)}, ${Math.round(base[2] * dDark * sootFactor)})`;
+        const sw = ch.hairSwing * 6;
+        ctx.save();
+        ctx.fillStyle = col;
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.8)';
+        ctx.lineWidth = 1.3;
+        if (t.hairStyle === 'long_flowing') {
+          ctx.beginPath();
+          ctx.moveTo(-headR * 0.2, -headR);
+          ctx.quadraticCurveTo(-headR * 1.7, -headR * 0.6, -headR * 1.45 + sw * 0.5, headR * 1.6);
+          ctx.quadraticCurveTo(-headR * 1.35 + sw, headR * 3.4, -headR * 0.6 + sw, headR * 3.3);
+          ctx.quadraticCurveTo(-headR * 0.1, headR * 2.2, headR * 0.15, headR * 0.7);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else if (t.hairStyle === 'twin_braids') {
+          for (let b = 0; b < 2; b++) {
+            const bx = -headR * (0.8 + b * 0.45);
+            for (let seg = 0; seg < 5; seg++) {
+              const sy = headR * 0.5 + seg * headR * 0.62;
+              const sx = bx - seg * 0.9 + sw * (seg / 5);
+              ctx.beginPath();
+              ctx.ellipse(sx, sy, 3.6 - seg * 0.25, 3.4, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.stroke();
+            }
+          }
+        } else {
+          // bun_bone: شعر خلفي قصير + كعكة
+          ctx.beginPath();
+          ctx.moveTo(-headR * 0.2, -headR);
+          ctx.quadraticCurveTo(-headR * 1.5, -headR * 0.4, -headR * 1.25 + sw * 0.4, headR * 0.9);
+          ctx.quadraticCurveTo(-headR * 0.6, headR * 0.7, headR * 0.1, headR * 0.3);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(-headR * 0.95, -headR * 0.95, headR * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawFemaleTopHair(ctx, ch, t, headR) {
+        // طاقية الشعر العلوية + غرة ناعمة (اللون يأتي من fillStyle الحالي)
+        ctx.beginPath();
+        ctx.arc(-1, -1, headR + 1.2, -0.95, -3.77, true);
+        ctx.quadraticCurveTo(-1, -3.2, headR * 0.58, -headR * 0.82);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(20, 12, 6, 0.75)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
+
+      function drawCartoonBone(ctx, x, y, angle, halfLen) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#fafaf9';
+        ctx.strokeStyle = '#292524';
+        ctx.lineWidth = 1.2;
+        ctx.fillRect(-halfLen, -2.2, halfLen * 2, 4.4);
+        ctx.strokeRect(-halfLen, -2.2, halfLen * 2, 4.4);
+        [-halfLen, halfLen].forEach((bx) => {
+          [-2.2, 2.2].forEach((by) => {
+            ctx.beginPath();
+            ctx.arc(bx, by, 2.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          });
+        });
+        ctx.restore();
+      }
+
+      // ==========================================
+      // 7. ENVIRONMENT, ICONIC DRESS SILHOUETTE, CROWN & PIANO FOR «رغودا»
+      // ==========================================
+      function drawCaveEnvironment(ctx, w, h, camShiftX) {
+        const centerX = w * 0.5 + camShiftX;
+        const horizonY = h * 0.49;
+        const bloom = state.bloomIntensity * (state.smiteActive && state.smiteTimer < 0.5 ? 1.65 : 1);
+
+        const skyGrad = ctx.createRadialGradient(centerX, h * 0.44, 18, centerX, h * 0.48, Math.max(w, h) * 0.8);
+        skyGrad.addColorStop(0, `rgba(128, 88, 44, ${Math.min(1, 0.58 * bloom)})`);
+        skyGrad.addColorStop(0.36, '#291f17');
+        skyGrad.addColorStop(0.72, '#17110d');
+        skyGrad.addColorStop(1, '#090604');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.save();
+        ctx.translate(centerX, h * 0.46);
+        for (let r = 0; r < 12; r++) {
+          const angle = (r / 12) * Math.PI * 2 + state.time * 0.08;
+          const rayGrad = ctx.createLinearGradient(0, 0, Math.cos(angle) * w * 0.55, Math.sin(angle) * h * 0.55);
+          rayGrad.addColorStop(0, `rgba(255, 232, 150, ${0.11 * bloom})`);
+          rayGrad.addColorStop(1, 'rgba(255, 200, 90, 0)');
+          ctx.fillStyle = rayGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, Math.max(w, h) * 0.65, angle - 0.09, angle + 0.09);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.fillStyle = '#120d0a';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        for (let i = 0; i <= 20; i++) {
+          const rx = (i / 20) * w;
+          const ry = 22 + Math.sin(i * 1.7 + camShiftX * 0.003) * 16 + (i % 4 === 0 ? 18 : 0);
+          ctx.lineTo(rx, ry);
+        }
+        ctx.lineTo(w, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#1b140f';
+        ctx.beginPath();
+        ctx.moveTo(0, horizonY);
+        for (let x = 0; x <= w; x += 36) {
+          const wx = x - camShiftX * 0.4;
+          const rh = Math.sin(wx * 0.007) * 24 + Math.cos(wx * 0.019) * 12;
+          ctx.lineTo(x, horizonY - 22 - rh);
+        }
+        ctx.lineTo(w, horizonY);
+        ctx.closePath();
+        ctx.fill();
+
+        const floorGrad = ctx.createLinearGradient(0, horizonY - 8, 0, h);
+        floorGrad.addColorStop(0, '#211813');
+        floorGrad.addColorStop(0.35, '#31241b');
+        floorGrad.addColorStop(0.75, '#221812');
+        floorGrad.addColorStop(1, '#0e0a07');
+        ctx.fillStyle = floorGrad;
+        ctx.fillRect(0, horizonY - 8, w, h - horizonY + 8);
+
+        const groundCenterY = h * 0.59;
+        const pulse = 0.9 + Math.sin(state.time * 3.1) * 0.1;
+        const reflAlpha = Math.min(0.95, 0.52 * bloom * pulse);
+        const reflGrad = ctx.createRadialGradient(centerX, groundCenterY, 8, centerX, groundCenterY, w * 0.44);
+        reflGrad.addColorStop(0, `rgba(255, 234, 145, ${reflAlpha})`);
+        reflGrad.addColorStop(0.35, `rgba(240, 165, 48, ${reflAlpha * 0.52})`);
+        reflGrad.addColorStop(0.75, `rgba(135, 82, 24, ${reflAlpha * 0.18})`);
+        reflGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = reflGrad;
+        ctx.beginPath();
+        ctx.ellipse(centerX, groundCenterY, w * 0.45, h * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawRoyalCrown(ctx, headX, headTopY, bloom) {
+        ctx.save();
+        ctx.translate(headX, headTopY);
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 18 * bloom;
+
+        const crownGrad = ctx.createLinearGradient(-18, -22, 18, 2);
+        crownGrad.addColorStop(0, '#fef08a');
+        crownGrad.addColorStop(0.5, '#f59e0b');
+        crownGrad.addColorStop(1, '#b45309');
+
+        ctx.fillStyle = crownGrad;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.3;
+
+        ctx.beginPath();
+        ctx.moveTo(-15, 2);
+        ctx.lineTo(-18, -13);
+        ctx.lineTo(-11, -5);
+        ctx.lineTo(-7, -17);
+        ctx.lineTo(-3, -7);
+        ctx.lineTo(0, -22);
+        ctx.lineTo(3, -7);
+        ctx.lineTo(7, -17);
+        ctx.lineTo(11, -5);
+        ctx.lineTo(18, -13);
+        ctx.lineTo(15, 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(-15, -2, 30, 4.5);
+        ctx.strokeRect(-15, -2, 30, 4.5);
+
+        ctx.fillStyle = '#ffffff';
+        [
+          [-18, -14],
+          [-7, -18],
+          [0, -23],
+          [7, -18],
+          [18, -14]
+        ].forEach(([px, py]) => {
+          ctx.beginPath();
+          ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(0, 0, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(-8, 0, 1.9, 0, Math.PI * 2);
+        ctx.arc(8, 0, 1.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawGrandPiano(ctx, vis, time) {
+        if (vis <= 0.01) return;
+        ctx.save();
+        ctx.globalAlpha = vis;
+        ctx.translate(18, (1 - vis) * 35);
+
+        const pShadow = ctx.createRadialGradient(45, 8, 4, 45, 8, 78);
+        pShadow.addColorStop(0, 'rgba(0, 0, 0, 0.78)');
+        pShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = pShadow;
+        ctx.beginPath();
+        ctx.ellipse(45, 8, 78, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#1c1410';
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1.6;
+        [10, 52, 88].forEach((lx) => {
+          ctx.fillRect(lx, -46, 6.5, 52);
+          ctx.strokeRect(lx, -46, 6.5, 52);
+        });
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(38, -46);
+        ctx.lineTo(38, 3);
+        ctx.lineTo(48, 5);
+        ctx.stroke();
+
+        ctx.fillStyle = '#291d16';
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(96, -68);
+        ctx.lineTo(18, -118);
+        ctx.lineTo(24, -124);
+        ctx.lineTo(100, -72);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(46, -68);
+        ctx.lineTo(42, -104);
+        ctx.stroke();
+
+        const bodyGrad = ctx.createLinearGradient(0, -82, 105, -42);
+        bodyGrad.addColorStop(0, '#2b1e16');
+        bodyGrad.addColorStop(0.6, '#17100c');
+        bodyGrad.addColorStop(1, '#3b281c');
+        ctx.fillStyle = bodyGrad;
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.2;
+
+        ctx.beginPath();
+        ctx.moveTo(-2, -68);
+        ctx.lineTo(100, -68);
+        ctx.quadraticCurveTo(106, -55, 96, -45);
+        ctx.lineTo(-2, -45);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(253, 224, 71, 0.65)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(4, -56);
+        ctx.lineTo(94, -56);
+        ctx.stroke();
+
+        ctx.fillStyle = '#fffbeb';
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 1.2;
+        ctx.fillRect(-14, -62, 22, 9);
+        ctx.strokeRect(-14, -62, 22, 9);
+
+        for (let k = 0; k < 6; k++) {
+          const kx = -12 + k * 3.3;
+          const activeKey = Math.floor((time * 9) % 6) === k;
+          ctx.fillStyle = activeKey ? '#fde047' : '#1c1917';
+          ctx.fillRect(kx, -62, 1.8, activeKey ? 6.5 : 5);
+        }
+
+        ctx.restore();
+      }
+
+      function drawRaghoudaEntity(ctx, centerX, centerY, scale) {
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(scale, scale);
+
+        const pulse = 1 + Math.sin(state.time * 3.6) * 0.06;
+        const smiteBoost = state.smiteActive && state.smiteTimer < 0.6
+          ? 1 + Math.sin((state.smiteTimer / 0.6) * Math.PI) * 1.5
+          : 1;
+        const bloom = state.bloomIntensity * pulse * smiteBoost;
+
+        energyRings.forEach((ring) => {
+          ctx.save();
+          ctx.strokeStyle = `rgba(255, 228, 135, ${ring.alpha * 0.55 * bloom})`;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.ellipse(0, 10, ring.radius * 330, ring.radius * 125, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        const aura = ctx.createRadialGradient(0, -88, 6, 0, -88, 195 * bloom);
+        aura.addColorStop(0, `rgba(255, 255, 248, ${Math.min(1, 0.96 * bloom)})`);
+        aura.addColorStop(0.24, `rgba(255, 234, 150, ${Math.min(1, 0.74 * bloom)})`);
+        aura.addColorStop(0.56, `rgba(245, 170, 42, ${Math.min(1, 0.28 * bloom)})`);
+        aura.addColorStop(1, 'rgba(245, 158, 11, 0)');
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(0, -88, 195 * bloom, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        const hoverY = Math.sin(state.time * 2.3) * 4.5;
+        const pianoShiftX = -state.pianoVisibility * 22;
+        const pianoSwayX = state.pianoVisibility * Math.sin(state.time * 4.2) * 3.5;
+        ctx.translate(pianoShiftX + pianoSwayX, hoverY);
+        ctx.shadowColor = '#fffbeb';
+        ctx.shadowBlur = 34 * bloom;
+
+        const bodyGrad = ctx.createLinearGradient(0, -168, 0, 10);
+        bodyGrad.addColorStop(0, '#ffffff');
+        bodyGrad.addColorStop(0.55, '#fffbeb');
+        bodyGrad.addColorStop(0.9, '#fde68a');
+        bodyGrad.addColorStop(1, '#fbbf24');
+        ctx.fillStyle = bodyGrad;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.arc(0, -146, 15.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-14, -124);
+        ctx.lineTo(14, -124);
+        ctx.lineTo(10, -96);
+        ctx.lineTo(36, -34);
+        ctx.quadraticCurveTo(0, -28, -36, -34);
+        ctx.lineTo(-10, -96);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.lineWidth = 8.5;
+        ctx.beginPath();
+        ctx.moveTo(-9, -34);
+        ctx.lineTo(-9, 4);
+        ctx.moveTo(9, -34);
+        ctx.lineTo(9, 4);
+        ctx.stroke();
+
+        if (state.pianoVisibility > 0.3) {
+          const handPlay1 = Math.sin(state.time * 14) * 5;
+          const handPlay2 = Math.cos(state.time * 14) * 5;
+          ctx.lineWidth = 7.5;
+          ctx.beginPath();
+          ctx.moveTo(-10, -118);
+          ctx.lineTo(10, -84);
+          ctx.lineTo(28 + handPlay1, -63 + Math.abs(handPlay1) * 0.5);
+          ctx.moveTo(12, -118);
+          ctx.lineTo(20, -82);
+          ctx.lineTo(35 + handPlay2, -62 + Math.abs(handPlay2) * 0.5);
+          ctx.stroke();
+        } else {
+          ctx.lineWidth = 8.0;
+          ctx.beginPath();
+          ctx.moveTo(-14, -120);
+          ctx.lineTo(-32, -76);
+          ctx.moveTo(14, -120);
+          ctx.lineTo(32, -76);
+          ctx.stroke();
+        }
+
+        drawRoyalCrown(ctx, 0, -161, bloom);
+
+        ctx.restore();
+
+        drawGrandPiano(ctx, state.pianoVisibility, state.time);
+
+        const titleY = -218 + Math.sin(state.time * 2.3 + 0.9) * 4.5;
+        ctx.save();
+        ctx.font = '900 40px "Cairo", "Aref Ruqaa", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let d = 6; d >= 1; d--) {
+          ctx.fillStyle = d > 3 ? '#78350f' : '#d97706';
+          ctx.fillText('« رغودا »', 0, titleY + d * 1.15);
+        }
+
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 26 * bloom;
+        const faceGrad = ctx.createLinearGradient(0, titleY - 18, 0, titleY + 16);
+        faceGrad.addColorStop(0, '#ffffff');
+        faceGrad.addColorStop(0.52, '#fef08a');
+        faceGrad.addColorStop(1, '#f59e0b');
+        ctx.fillStyle = faceGrad;
+        ctx.fillText('« رغودا »', 0, titleY);
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      // ==========================================
+      // 8. EXPLOSIONS, LIGHTNING BOLTS, MUSIC NOTES & DEBRIS
+      // ==========================================
+      function drawExplosionsAndEffects(ctx, w, h, centerX, centerY) {
+        for (let i = smiteBolts.length - 1; i >= 0; i--) {
+          const b = smiteBolts[i];
+          ctx.save();
+          ctx.strokeStyle = '#fef08a';
+          ctx.shadowColor = '#f97316';
+          ctx.shadowBlur = 18;
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(b.x1, b.y1);
+          const steps = 6;
+          for (let s = 1; s < steps; s++) {
+            const frac = s / steps;
+            const jx = lerp(b.x1, b.x2, frac) + (Math.random() - 0.5) * 34;
+            const jy = lerp(b.y1, b.y2, frac) + (Math.random() - 0.5) * 24;
+            ctx.lineTo(jx, jy);
+          }
+          ctx.lineTo(b.x2, b.y2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        for (let i = explosionFireballs.length - 1; i >= 0; i--) {
+          const f = explosionFireballs[i];
+          f.x += f.vx;
+          f.y += f.vy;
+          f.r *= 1.02;
+          f.alpha -= f.decay;
+          if (f.alpha <= 0.01) {
+            explosionFireballs.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          if (f.type === 'fire') ctx.fillStyle = `rgba(249, 115, 22, ${f.alpha})`;
+          else if (f.type === 'spark') ctx.fillStyle = `rgba(254, 240, 138, ${f.alpha})`;
+          else ctx.fillStyle = `rgba(41, 37, 36, ${f.alpha * 0.85})`;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        for (let i = flyingDebris.length - 1; i >= 0; i--) {
+          const d = flyingDebris[i];
+          if (d.alpha <= 0.02) {
+            flyingDebris.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = d.alpha;
+          if (d.type === 'bone') {
+            drawCartoonBone(ctx, d.x, d.y, d.rot, 12);
+          } else {
+            ctx.translate(d.x, d.y);
+            ctx.rotate(d.rot);
+            ctx.fillStyle = '#78350f';
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.moveTo(-14, -2);
+            ctx.lineTo(12, -6);
+            ctx.arc(12, 0, 6, -Math.PI / 2, Math.PI / 2);
+            ctx.lineTo(-14, 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        for (let i = musicalNotes.length - 1; i >= 0; i--) {
+          const mn = musicalNotes[i];
+          if (mn.alpha <= 0.02) {
+            musicalNotes.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = mn.alpha;
+          ctx.font = `bold ${Math.round(mn.size)}px serif`;
+          ctx.fillStyle = '#fef08a';
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 12;
+          ctx.fillText(mn.symbol, mn.x + Math.sin(state.time * 4 + mn.phase) * 8, mn.y);
+          ctx.restore();
+        }
+
+        for (let i = handDustClouds.length - 1; i >= 0; i--) {
+          const p = handDustClouds[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.isPebble) p.vy += 0.08;
+          else {
+            p.vy -= 0.012;
+            p.size *= 1.014;
+          }
+          p.alpha -= p.decay;
+          if (p.alpha <= 0.01) {
+            handDustClouds.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.fillStyle = p.golden
+            ? `rgba(248, 210, 130, ${p.alpha})`
+            : `rgba(172, 140, 108, ${p.alpha})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.save();
+        floatingDust.forEach((d) => {
+          d.x = (d.x + d.vx + 1) % 1;
+          d.y = (d.y + d.vy + 1) % 1;
+          const px = d.x * w;
+          const py = d.y * h;
+          const dist = Math.hypot(px - centerX, py - centerY);
+          const prox = Math.max(0.2, 1 - dist / (w * 0.55));
+          const shimmer = 0.6 + 0.4 * Math.sin(state.time * 3.1 + d.phase);
+          ctx.fillStyle = `rgba(255, 232, 165, ${Math.min(1, d.alpha * prox * shimmer)})`;
+          ctx.beginPath();
+          ctx.arc(px, py, d.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+
+        const vignette = ctx.createRadialGradient(
+          w * 0.5,
+          h * 0.52,
+          Math.min(w, h) * 0.25,
+          w * 0.5,
+          h * 0.52,
+          Math.max(w, h) * 0.68
+        );
+        vignette.addColorStop(0, 'rgba(10, 7, 5, 0)');
+        vignette.addColorStop(0.66, 'rgba(14, 10, 7, 0.36)');
+        vignette.addColorStop(1, 'rgba(6, 4, 3, 0.78)');
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // ==========================================
+      // 9. SIMULATION UPDATE & RENDER LOOP
+      // ==========================================
+      const canvas = document.getElementById('mainCanvas');
+      const ctx = canvas.getContext('2d');
+      const heartsCanvas = document.getElementById('heartsCanvas');
+      const heartsCtx = heartsCanvas.getContext('2d');
+
+      function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(320, Math.floor(window.innerWidth * dpr));
+        canvas.height = Math.max(320, Math.floor(window.innerHeight * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        heartsCanvas.width = Math.max(320, Math.floor(window.innerWidth * dpr));
+        heartsCanvas.height = Math.max(320, Math.floor(window.innerHeight * dpr));
+        heartsCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      window.addEventListener('resize', resizeCanvas);
+
+      function updateSimulation(dt) {
+        state.panicSpeedBoost = lerp(state.panicSpeedBoost, 1.0, dt * 0.45);
+        state.time += dt * state.speed * state.panicSpeedBoost;
+
+        if (state.started) {
+          state.sceneElapsed += dt * state.speed;
+        }
+
+        const targetPianoVis = state.mode === 'piano' ? 1.0 : 0.0;
+        state.pianoVisibility = lerp(state.pianoVisibility, targetPianoVis, Math.min(1, dt * 6));
+
+        if (state.mode === 'piano' && state.started) {
+          state.pianoNoteTimer -= dt * state.speed;
+          if (state.pianoNoteTimer <= 0) {
+            const step = PIANO_SCORE[state.pianoNoteIndex % PIANO_SCORE.length];
+            playPianoNote(step.note, step.bass);
+            state.pianoNoteTimer = step.dur;
+            state.pianoNoteIndex++;
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const sc = Math.max(0.58, Math.min(1.28, Math.min(w / 960, h / 560)));
+            spawnMusicNote(w * 0.5 + state.userDragOffset, h * 0.61, sc);
+          }
+
+          state.clapSoundTimer -= dt;
+          if (state.clapSoundTimer <= 0) {
+            playSoftClapBurst();
+            state.clapSoundTimer = 0.16 + Math.random() * 0.08;
+          }
+        }
+
+        for (let i = musicalNotes.length - 1; i >= 0; i--) {
+          const mn = musicalNotes[i];
+          mn.x += mn.vx * dt;
+          mn.y += mn.vy * dt;
+          mn.alpha -= dt * 0.55;
+        }
+
+        energyRings.forEach((ring) => {
+          ring.radius += dt * 0.24 * state.speed;
+          if (ring.radius > 1.0) ring.radius -= 1.0;
+          ring.alpha = Math.max(0, 1 - ring.radius);
+        });
+
+        if (state.smiteActive) {
+          state.smiteTimer += dt;
+          if (state.smiteTimer < 0.65) {
+            const shakeMag = (1 - state.smiteTimer / 0.65) * 22;
+            state.screenShakeX = (Math.random() - 0.5) * shakeMag * 2;
+            state.screenShakeY = (Math.random() - 0.5) * shakeMag * 2;
+          } else {
+            state.screenShakeX = 0;
+            state.screenShakeY = 0;
+          }
+          if (state.smiteTimer > 3.5) {
+            state.smiteActive = false;
+          }
+        }
+
+        for (let i = smiteBolts.length - 1; i >= 0; i--) {
+          smiteBolts[i].life -= dt;
+          if (smiteBolts[i].life <= 0) smiteBolts.splice(i, 1);
+        }
+
+        for (let i = flyingDebris.length - 1; i >= 0; i--) {
+          const d = flyingDebris[i];
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          d.vy += 920 * dt;
+          d.rot += d.vRot * dt;
+          d.alpha -= dt * 0.55;
+        }
+
+        characters.forEach((ch) => {
+          const rawEnter = (state.sceneElapsed - ch.enterStartTime) / ch.enterDuration;
+          const prevEnter = ch.enterProgress;
+          ch.enterProgress = Math.max(0, Math.min(1, rawEnter));
+
+          if (ch.enterProgress >= 1 && prevEnter < 1) {
+            spawnGroundDust(ch.targetX, ch.targetY, ch.scale, ch.facing, 0.7);
+          }
+
+          if (ch.enterProgress <= 0.001) return;
+
+          ch.prevP = ch.p;
+          if (ch.xrayTimer > 0) ch.xrayTimer -= dt;
+          if (ch.dizzyStarsTimer > 0) ch.dizzyStarsTimer -= dt;
+          if (ch.charredAmount > 0) ch.charredAmount = Math.max(0, ch.charredAmount - dt * 0.22);
+
+          if (ch.blastActive) {
+            ch.blastX += ch.blastVX * dt;
+            ch.blastY += ch.blastVY * dt;
+            ch.blastVY += 980 * dt;
+            ch.blastRot += ch.blastVRot * dt;
+
+            if (ch.blastY >= 0 && ch.blastVY > 0) {
+              if (Math.abs(ch.blastVY) > 180) {
+                ch.blastY = 0;
+                ch.blastVY = -ch.blastVY * 0.36;
+                ch.blastVX *= 0.45;
+                ch.blastVRot *= 0.5;
+                spawnGroundDust(ch.screenX + ch.blastX * ch.scale, ch.screenY, ch.scale, ch.facing, 1.4);
+                playGroundThud();
+              } else {
+                ch.blastActive = false;
+                ch.blastY = 0;
+                ch.blastVY = 0;
+              }
+            }
+          } else {
+            ch.blastX = lerp(ch.blastX, 0, Math.min(1, dt * 6));
+            ch.blastRot = lerp(ch.blastRot, 0, Math.min(1, dt * 8));
+          }
+
+          let targetP = 0;
+          let bounce = 0;
+
+          if (ch.enterProgress < 1 || state.mode === 'piano') {
+            targetP = 0.0;
+          } else if (state.mode === 'pose1') {
+            targetP = 0.0;
+          } else if (state.mode === 'pose2') {
+            targetP = 0.5;
+          } else if (state.mode === 'pose3') {
+            targetP = 1.0;
+          } else {
+            const staggerSec = (ch.waveIndex * state.staggerFrames) / 60;
+            const omega = 2.05;
+            const phase = state.time * omega - staggerSec * omega * 2.5;
+            const raw = (Math.sin(phase) + 1) * 0.5;
+
+            if (raw < 0.15) {
+              targetP = 0;
+            } else if (raw > 0.84) {
+              targetP = 1;
+              const impactPhase = (raw - 0.84) / 0.16;
+              bounce = -Math.sin(impactPhase * Math.PI) * Math.exp(-impactPhase * 2.2) * 4.5;
+            } else {
+              targetP = smoothstep((raw - 0.15) / 0.69);
+            }
+          }
+
+          const prevP = ch.p;
+          ch.p += (targetP - ch.p) * Math.min(1, dt * 11);
+          ch.velocityP = (ch.p - prevP) / Math.max(0.001, dt);
+          ch.bounceY = bounce;
+
+          const targetSwing = -ch.velocityP * 0.18 + (ch.blastActive ? Math.sin(state.time * 25) * 0.5 : 0);
+          ch.hairVel += (targetSwing - ch.hairSwing) * dt * 28;
+          ch.hairVel *= Math.pow(0.82, dt * 60);
+          ch.hairSwing += ch.hairVel * dt * 12;
+
+          if (ch.dustCooldown > 0) ch.dustCooldown -= dt;
+          if (!ch.blastActive && ch.enterProgress >= 1 && ch.p > 0.91 && ch.prevP <= 0.91 && ch.dustCooldown <= 0) {
+            const handWorldX = ch.screenX + ch.facing * 68 * ch.scale;
+            spawnGroundDust(handWorldX, ch.screenY, ch.scale, ch.facing, 1.0);
+            if (ch.id % 3 === 0) playGroundThud();
+            ch.dustCooldown = 0.75;
+          }
+        });
+      }
+
+      function renderScene() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        if (w <= 0 || h <= 0) return;
+
+        ctx.save();
+        ctx.translate(state.screenShakeX, state.screenShakeY);
+
+        const camShiftX = state.userDragOffset;
+        const centerX = w * 0.5 + camShiftX;
+        const centerY = h * 0.61;
+        const sceneScale = Math.max(0.58, Math.min(1.28, Math.min(w / 960, h / 560)));
+
+        drawCaveEnvironment(ctx, w, h, camShiftX);
+
+        const radX = Math.min(w * 0.38, 370 * sceneScale);
+        const radY = Math.min(h * 0.19, 118 * sceneScale);
+
+        characters.forEach((ch) => {
+          ch.targetX = centerX + Math.cos(ch.angle) * radX;
+          ch.targetY = centerY + Math.sin(ch.angle) * radY;
+
+          const fromRightSide = Math.cos(ch.angle) >= 0;
+          const startEdgeX = fromRightSide ? w + 110 : -110;
+          const easeEnt = smoothstep(ch.enterProgress);
+          ch.screenX = lerp(startEdgeX, ch.targetX, easeEnt);
+          ch.screenY = ch.targetY;
+          ch.facing = fromRightSide ? -1 : 1;
+        });
+
+        const backRow = characters.filter((c) => c.row === 'back').sort((a, b) => a.screenY - b.screenY);
+        backRow.forEach((ch) => drawTribeCharacter(ctx, ch, sceneScale));
+
+        drawRaghoudaEntity(ctx, centerX, centerY, sceneScale);
+
+        const frontRow = characters.filter((c) => c.row === 'front').sort((a, b) => a.screenY - b.screenY);
+        frontRow.forEach((ch) => drawTribeCharacter(ctx, ch, sceneScale));
+
+        drawExplosionsAndEffects(ctx, w, h, centerX, centerY);
+
+        if (state.smiteActive && state.smiteTimer < 0.25) {
+          const flashAlpha = (1 - state.smiteTimer / 0.25) * 0.55;
+          ctx.fillStyle = `rgba(255, 240, 180, ${flashAlpha})`;
+          ctx.fillRect(-30, -30, w + 60, h + 60);
+        }
+
+        ctx.restore();
+      }
+
+      // ==========================================
+      // 10. UI CONTROLS & INTERACTION
+      // ==========================================
+      const startOverlay = document.getElementById('startScreenOverlay');
+      const topLeftControls = document.getElementById('topLeftControls');
+      const menuBtn = document.getElementById('menuToggleBtn');
+      const panel = document.getElementById('settingsPanel');
+
+      document.getElementById('startSimBtn').addEventListener('click', () => {
+        ensureAudio();
+        state.started = true;
+        state.sceneElapsed = 0;
+        startOverlay.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          startOverlay.classList.add('hidden');
+        }, 480);
+        topLeftControls.classList.remove('hidden');
+        topLeftControls.classList.add('flex');
+      });
+
+      document.getElementById('loveBtnStart').addEventListener('click', (e) => {
+        e.stopPropagation();
+        triggerLoveHeartsShow();
+      });
+
+      document.getElementById('loveBtnMenu').addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.add('hidden');
+        triggerLoveHeartsShow();
+      });
+
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.toggle('hidden');
+      });
+
+      function setActiveButtonUI(mode) {
+        const ids = {
+          wave: 'modeWaveBtn',
+          pose1: 'modePose1Btn',
+          pose2: 'modePose2Btn',
+          pose3: 'modePose3Btn',
+          piano: 'modePianoBtn'
+        };
+        Object.keys(ids).forEach((k) => {
+          const el = document.getElementById(ids[k]);
+          if (!el) return;
+          if (k === mode) el.classList.add('pose-btn-active');
+          else el.classList.remove('pose-btn-active');
+        });
+      }
+
+      document.getElementById('audioToggleBtn').addEventListener('click', toggleAudio);
+
+      document.getElementById('modeWaveBtn').addEventListener('click', () => {
+        state.mode = 'wave';
+        setActiveButtonUI('wave');
+      });
+
+      document.getElementById('modePose1Btn').addEventListener('click', () => {
+        state.mode = 'pose1';
+        setActiveButtonUI('pose1');
+      });
+
+      document.getElementById('modePose2Btn').addEventListener('click', () => {
+        state.mode = 'pose2';
+        setActiveButtonUI('pose2');
+      });
+
+      document.getElementById('modePose3Btn').addEventListener('click', () => {
+        state.mode = 'pose3';
+        setActiveButtonUI('pose3');
+        characters.forEach((ch) => {
+          if (ch.enterProgress >= 1) {
+            spawnGroundDust(ch.screenX + ch.facing * 64 * ch.scale, ch.screenY, ch.scale, ch.facing, 0.85);
+          }
+        });
+        playGroundThud();
+      });
+
+      document.getElementById('modePianoBtn').addEventListener('click', () => {
+        ensureAudio();
+        state.mode = 'piano';
+        state.pianoNoteTimer = 0;
+        setActiveButtonUI('piano');
+      });
+
+      document.getElementById('triggerSmiteBtn').addEventListener('click', () => {
+        triggerSmiteExplosion(null);
+      });
+
+      canvas.addEventListener('pointerdown', (e) => {
+        ensureAudio();
+        if (!panel.classList.contains('hidden')) {
+          panel.classList.add('hidden');
+        }
+        state.isDragging = true;
+        state.dragStartX = e.clientX - state.userDragOffset;
+
+        const hitChar = characters.find((ch) => {
+          if (ch.enterProgress < 0.2) return false;
+          const cx = ch.screenX + ch.blastX * ch.scale;
+          const cy = ch.screenY - 55 * ch.scale + ch.blastY * ch.scale;
+          return Math.hypot(e.clientX - cx, e.clientY - cy) < 55;
+        });
+
+        if (hitChar) {
+          triggerSmiteExplosion(hitChar);
+        } else {
+          spawnGroundDust(e.clientX, e.clientY, 1.0, 1, 1.1);
+        }
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!state.isDragging) return;
+        const delta = e.clientX - state.dragStartX;
+        state.userDragOffset = Math.max(-240, Math.min(240, delta));
+      });
+
+      window.addEventListener('pointerup', () => {
+        state.isDragging = false;
+      });
+
+      let lastTime = performance.now();
+      function animate(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+        updateSimulation(dt);
+        renderScene();
+        updateAndRenderHeartsOverlay(dt);
+        requestAnimationFrame(animate);
+      }
+
+      window.onload = function () {
+        resizeCanvas();
+        requestAnimationFrame(animate);
+      };
+    })();
+  </script>
+</body>
+</html>
